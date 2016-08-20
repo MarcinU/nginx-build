@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Verions to be build
+NPS_VERSION=1.9.32.14
+NGINX_VERSION=1.10.1
+PS_NGX_EXTRA_FLAGS="--with-http_realip_module --sbin-path=${bin_dir}/nginx --conf-path=${bin_dir}/nginx.conf --pid-path=${bind_dir}/nginx.pid"
+
+# Directories
+dir="/usr/src/"
+bin_dir="/usr/local/nginx-${NGINX_VERSION}"
+
+
+
+mkdir ${bin_dir}
+
+cd ${dir}
+wget https://github.com/pagespeed/ngx_pagespeed/archive/release-${NPS_VERSION}-beta.zip -O release-${NPS_VERSION}-beta.zip
+unzip release-${NPS_VERSION}-beta.zip
+cd ngx_pagespeed-release-${NPS_VERSION}-beta/
+wget https://dl.google.com/dl/page-speed/psol/${NPS_VERSION}.tar.gz
+tar -xzvf ${NPS_VERSION}.tar.gz  # extracts to psol/
+
+cd ${dir}
+# check http://nginx.org/en/download.html for the latest version
+wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz
+tar -xvzf nginx-${NGINX_VERSION}.tar.gz
+cd nginx-${NGINX_VERSION}/
+./configure --add-module=$dir/ngx_pagespeed-release-${NPS_VERSION}-beta ${PS_NGX_EXTRA_FLAGS} 
+make
+make install
+
+# Cleanup
+
+rm -rf ${dir}/ngx_pagespeed-release-${NPS_VERSION}-beta
+rm ${dir}/release-${NPS_VERSION}-beta.zip
+rm -rf ${dir}/psol
+rm -rf ${dir}/nginx-${NGINX_VERSION}        	    
+rm ${dir}/nginx-${NGINX_VERSION}.tar.gz
